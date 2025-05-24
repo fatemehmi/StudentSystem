@@ -1,0 +1,39 @@
+.menu_border {
+  width: 200px;
+  border: 1px solid black;
+}
+
+.dashborad_icon {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  background: blue;
+}
+
+.Profile {
+  width: 1000px;
+  height: 80%;
+  border-radius: 10px;
+  margin-top: 5%;
+  margin-right: calc(50vw - 625px);
+  background-color: gray;
+  padding: 50px;
+  font-size: 25px;
+  font-weight: 600;
+}
+
+.profileForm {
+  width: 300px;
+  height: 500px;
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.profileLabel {
+  width: 300px;
+}
+
+.edit {
+  cursor: pointer;
+}

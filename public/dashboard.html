@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="./dashboard.style.css" />
+  <title>Dashboard</title>
+</head>
+
+<body>
+  <div class="dashboard_container">
+    <div class="dashboard_navbar">
+      <div class="dashborad_icon"></div>
+      <div class="navbar_container">
+        <button>
+          رزرو غذا
+        </button>
+        <hr class="menu_border" />
+        <button>
+          درخواست ها
+        </button>
+        <hr class="menu_border" />
+        <button>
+          لیست دروس امسال
+        </button>
+        <hr class="menu_border" />
+        <button>
+          پرداخت ها و امور مالی
+        </button>
+        <hr class="menu_border" />
+        <button>
+          پیام ها و اطلاعیه ها
+        </button>
+        </button>
+        <hr class="menu_border" />
+        <button>
+          پروفایل شخصی
+        </button>
+      </div>
+    </div>
+
+    <div class="Profile">
+      <div class="dashborad_icon"></div>
+      <form class="profileForm" action="#" method="post">
+        <div>
+          <label class="profileLabel" name='username'>نام کاربری</label>
+          <input type="text" id="username" />
+        </div>
+        <div>
+          <label class="profileLabel" name='email'>ایمیل</label>
+          <input type="text" id="email" />
+        </div>
+        <div>
+          <label class="profileLabel" name='password'>رمز عبور</label>
+          <input type="text" id="password" />
+          <button class="edit">
+            <img src="./edit.svg" alt="Edit Icon" width="16" height="16" />
+          </button>
+        </div>
+      </form>
+    </div>
+
+  </div>
+
+  <script src="Profile.js"></script>
+</body>
+
+</html>

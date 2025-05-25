@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="./food.style.css" />
+  <title>Food</title>
+</head>
+
+<body>
+
+  <div class="dashboard_container">
+    <div class="dashboard_navbar">
+      <div class="dashborad_icon"></div>
+      <div class="navbar_container">
+        <button>
+          <a href="/Dashboard">
+            پنل کاربری
+          </a>
+        </button>
+        <button>
+          درخواست ها
+        </button>
+        <button>
+          لیست دروس امسال
+        </button>
+        <button>
+          پرداخت ها و امور مالی
+        </button>
+        <button>
+          پیام ها و اطلاعیه ها
+        </button>
+        </button>
+        <button>
+          پروفایل شخصی
+        </button>
+      </div>
+    </div>
+
+    <div class="container">
+      <!-- موجودی -->
+      <div class="balance-section">
+        <span>موجودی: <strong id="balance">120,000</strong> تومان</span>
+        <button id="add-balance-btn">افزایش موجودی</button>
+      </div>
+
+      <!-- فرم رزرو -->
+      <div class="form-section">
+
+        <!-- انتخاب رستوران -->
+        <label for="restaurant">رستوران:</label>
+        <select id="restaurant">
+          <option value="">انتخاب کنید</option>
+          <option value="1">رستوران سبحان</option>
+          <option value="2">سلف مرکزی (خواهران)</option>
+        </select>
+
+        <!-- انتخاب تاریخ -->
+        <label for="date">تاریخ:</label>
+        <input type="date" id="date" />
+
+        <!-- انتخاب غذا -->
+        <label>انتخاب غذا:</label>
+        <div class="food-list">
+          <div class="food-item" data-name="چلوکباب" data-price="95000">
+            <img src="./image/food1.jpg" alt="چلوکباب" />
+            <p>چلوکباب</p>
+            <span>95,000 تومان</span>
+          </div>
+          <div class="food-item" data-name="قرمه‌سبزی" data-price="85000">
+            <img src="./image/food2.jpg" alt="قرمه‌سبزی" />
+            <p>قرمه‌سبزی</p>
+            <span>85,000 تومان</span>
+          </div>
+          <!-- غذای بیشتر -->
+        </div>
+
+        <button id="add-meal-btn">افزودن</button>
+      </div>
+
+      <!-- لیست غذاهای رزرو شده -->
+      <div class="list-section">
+        <table>
+          <thead>
+            <tr>
+              <th>تاریخ</th>
+              <th>غذا</th>
+              <th>عملیات</th>
+            </tr>
+          </thead>
+          <tbody id="order-list">
+            <!-- سفارشات اضافه خواهند شد -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script src="Food.js"></script>
+
+</body>
+
+</html>

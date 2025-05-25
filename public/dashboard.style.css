@@ -3,7 +3,7 @@
   border: 1px solid black;
 }
 
-.dashborad_icon {
+.dashboard_icon {
   width: 150px;
   height: 150px;
   border-radius: 50%;
@@ -36,4 +36,13 @@
 
 .edit {
   cursor: pointer;
+}
+
+.navbar_container button a {
+  text-decoration: none;
+}
+
+.navbar_container button a:visited {
+  text-decoration: none;
+  color: black;
 }

@@ -15,26 +15,23 @@
       <div class="dashborad_icon"></div>
       <div class="navbar_container">
         <button>
-          رزرو غذا
+          <a href="/Food">
+            رزرو غذا
+          </a>
         </button>
-        <hr class="menu_border" />
         <button>
           درخواست ها
         </button>
-        <hr class="menu_border" />
         <button>
           لیست دروس امسال
         </button>
-        <hr class="menu_border" />
         <button>
           پرداخت ها و امور مالی
         </button>
-        <hr class="menu_border" />
         <button>
           پیام ها و اطلاعیه ها
         </button>
         </button>
-        <hr class="menu_border" />
         <button>
           پروفایل شخصی
         </button>
@@ -42,24 +39,33 @@
     </div>
 
     <div class="Profile">
-      <div class="dashborad_icon"></div>
-      <form class="profileForm" action="#" method="post">
+      <form class="profileForm" id="profileForm" method="post">
         <div>
-          <label class="profileLabel" name='username'>نام کاربری</label>
-          <input type="text" id="username" />
-        </div>
-        <div>
-          <label class="profileLabel" name='email'>ایمیل</label>
-          <input type="text" id="email" />
-        </div>
-        <div>
-          <label class="profileLabel" name='password'>رمز عبور</label>
-          <input type="text" id="password" />
+          <label class="profileLabel" for="username">نام کاربری</label>
+          <input type="text" id="username" name="username" disabled />
           <button class="edit">
-            <img src="./edit.svg" alt="Edit Icon" width="16" height="16" />
+            <img src="../image/edit.svg" class="edit" id="editUsernameBtn" alt="Edit username" width="16" height="16" />
           </button>
         </div>
+        <div>
+          <label class="profileLabel" for="email">ایمیل</label>
+          <input type="text" id="email" name="email" disabled />
+          <button class="edit">
+            <img src="../image/edit.svg" class="edit" id="editPasswordBtn" alt="Edit username" width="16" height="16" />
+          </button>
+        </div>
+
+        <!-- Password section, hidden initially -->
+        <div id="password-section" style="display: none;">
+          <label class="profileLabel" for="newPassword">رمز عبور جدید</label>
+          <input type="password" id="newPassword" name="newPassword" />
+        </div>
+
+        <div class="button-group">
+          <button type="submit" id="saveBtn" style="display: none;">ذخیره</button>
+        </div>
       </form>
+      <div id="message" style="color: red; margin-top: 10px;"></div>
     </div>
 
   </div>

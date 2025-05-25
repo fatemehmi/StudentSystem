@@ -7,7 +7,7 @@
 }
 
 .index_container {
-  background: url("./Back_img.jpg");
+  background: url("./image/Back_img.jpg");
   background-repeat: no-repeat;
   background-size: cover;
   display: flex;

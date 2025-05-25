@@ -33,6 +33,7 @@
           if (data.message === "Login Successful!") {
             window.location.href = "/Dashboard";
             localStorage.setItem("username", data.username);
+            localStorage.setItem("email", data.email);
           }
         })
         .catch((err) => {

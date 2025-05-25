@@ -1,33 +1,78 @@
-const username = localStorage.getItem("username");
-const email = localStorage.getItem("email");
-    console.log("Logged in as:", username);
-    console.log("Logged in as:", email);
+document.addEventListener("DOMContentLoaded", async () => {
+	const username = localStorage.getItem("username");
+	const email = localStorage.getItem("email");
 
-const defaultData = {
-	username: "test_user",
-	email: "user@example.com",
-	password: "secret123",
-};
+  const usernameInput = document.getElementById("username");
+  const emailInput = document.getElementById("email");
+  const newPasswordInput = document.getElementById("newPassword");
+  const passwordSection = document.getElementById("password-section");
+  const messageDiv = document.getElementById("message");
+  const saveBtn = document.getElementById("saveBtn");
 
-const usernameInput = document.getElementById("username");
-const emailInput = document.getElementById("email");
-const passwordInput = document.getElementById("password");
+  const editUsernameBtn = document.getElementById("editUsernameBtn");
+  const editPasswordBtn = document.getElementById("editPasswordBtn");
 
-usernameInput.value = localStorage.getItem("username") || defaultData.username;
-emailInput.value = localStorage.getItem("email") || defaultData.email;
-passwordInput.value = localStorage.getItem("password") || defaultData.password;
+  let editingUsername = false;
+  let changingPassword = false;
 
-usernameInput.addEventListener("dblclick", () =>
-	usernameInput.removeAttribute("readonly")
-);
-emailInput.addEventListener("dblclick", () =>
-	emailInput.removeAttribute("readonly")
-);
+  usernameInput.value = username;
+  emailInput.value = email;
 
-const editPasswordBtn = document.getElementById("editPasswordBtn");
+  editUsernameBtn.addEventListener("click", () => {
+    usernameInput.disabled = false;
+    saveBtn.style.display = "inline";
+    editingUsername = true;
+  });
 
-editPasswordBtn.addEventListener("click", (e) => {
-	e.preventDefault(); // prevent form submission
-	passwordInput.removeAttribute("readonly");
-	passwordInput.focus();
+  editPasswordBtn.addEventListener("click", () => {
+    passwordSection.style.display = "block";
+    saveBtn.style.display = "inline";
+    changingPassword = true;
+  });
+
+  document.getElementById("profileForm").addEventListener("submit", async (e) => {
+		e.preventDefault();
+		messageDiv.textContent = "";
+	
+		const updatedUsername = usernameInput.value.trim();
+		const newPassword = newPasswordInput.value.trim();
+	
+		const res = await fetch("/update-profile", {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+				"X-Current-Username": localStorage.getItem("username") // send current username
+			},
+			body: JSON.stringify({
+				username: updatedUsername,
+				newPassword: changingPassword ? newPassword : null,
+			}),
+		});
+		
+	
+		const result = await res.json();
+	
+		if (!res.ok) {
+			messageDiv.textContent = result.message;
+			return;
+		}
+	
+		if (changingPassword) {
+			// Clear localStorage before redirecting
+			localStorage.clear();
+	
+			// Optionally notify the server to destroy session (if not already done)
+			await fetch("/logout", { method: "POST" });
+	
+			// Redirect to login
+			window.location.href = "/login";
+		} else {
+			messageDiv.style.color = "green";
+			messageDiv.textContent = "تغییرات با موفقیت ذخیره شد!";
+			usernameInput.disabled = true;
+			passwordSection.style.display = "none";
+			saveBtn.style.display = "none";
+		}
+	});
+	
 });

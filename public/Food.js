@@ -1,3 +1,23 @@
+const mongoose = require("mongoose");
+
+mongoose
+	.connect("mongodb://localhost:27017/SignupAndLoginUsers", {
+		useNewUrlParser: true,
+		useUnifiedTopology: true,
+	})
+	.then(() => console.log("Connected to MongoDB using Mongoose"))
+	.catch((err) => console.error("Connection failed!", err));
+
+const reserveSchema = new mongoose.Schema({
+	userId: Number,
+	reserveDate: Date,
+	foodName: String,
+	restaurantName: String,
+	price: Number,
+});
+
+const Reserve = mongoose.model("Reserve", reserveSchema);
+
 const server = http.createServer((req, res) => {
 	if (req.url === "/" && req.method === "GET") {
 		serveFile(
@@ -34,8 +54,7 @@ const server = http.createServer((req, res) => {
 			const data = JSON.parse(body);
 			const { user_id, amount } = data;
 			db.run(
-				`INSERT INTO finances (user_id, balance) VALUES (?, ?) 
-           ON CONFLICT(user_id) DO UPDATE SET balance = balance + ?`,
+				`INSERT INTO finances (user_id, balance) VALUES (?, ?) ON CONFLICT(user_id) DO UPDATE SET balance = balance + ?`,
 				[user_id, amount, amount],
 				(err) => {
 					if (err) {
@@ -60,64 +79,30 @@ const server = http.createServer((req, res) => {
 			body += chunk.toString();
 		});
 		req.on("end", () => {
-			const { user_id, date, food, restaurant, price } = JSON.parse(body);
+			try {
+				const { user_id, date, food, restaurant, price } =
+					JSON.parse(body);
 
-			db.get(
-				"SELECT balance FROM finances WHERE user_id = ?",
-				[user_id],
-				(err, row) => {
-					if (err) {
-						res.writeHead(500, {
-							"Content-Type": "application/json",
-						});
-						return res.end(JSON.stringify({ error: "DB error" }));
-					}
-					if (!row || row.balance < price) {
-						res.writeHead(400, {
-							"Content-Type": "application/json",
-						});
-						return res.end(
-							JSON.stringify({ message: "موجودی کافی نیست" })
-						);
-					}
+				Reserve.insertOne({
+					userId: user_id,
+					reserveDate: date,
+					foodName: food,
+					restaurantName: restaurant,
+					price,
+				});
 
-					db.run(
-						"INSERT INTO reservations (user_id, date, food, restaurant) VALUES (?, ?, ?, ?)",
-						[user_id, date, food, restaurant],
-						function (err) {
-							if (err) {
-								res.writeHead(500, {
-									"Content-Type": "application/json",
-								});
-								return res.end(
-									JSON.stringify({ error: "Insert error" })
-								);
-							}
-
-							db.run(
-								"UPDATE finances SET balance = balance - ? WHERE user_id = ?",
-								[price, user_id],
-								(err) => {
-									if (err) {
-										res.writeHead(500, {
-											"Content-Type": "application/json",
-										});
-										return res.end(
-											JSON.stringify({
-												error: "Balance update failed",
-											})
-										);
-									}
-									res.writeHead(200, {
-										"Content-Type": "application/json",
-									});
-									res.end(JSON.stringify({ success: true }));
-								}
-							);
-						}
-					);
-				}
-			);
+        res.writeHead(200, { "Content-Type": "application/json" });
+				res.end(JSON.stringify({ message: "Reserve Successful!" }));
+			} catch (error) {
+        console.error("Reserve Error:", err);
+				res.writeHead(500, { "Content-Type": "application/json" });
+				res.end(
+					JSON.stringify({
+						message: "Reserve failed!",
+						error: err.message,
+					})
+				);
+			}
 		});
 	}
 

@@ -40,22 +40,47 @@ function serveFile(filePath, contentType, res) {
 const server = http.createServer((req, res) => {
 	// To load index.html
 	if (req.url === "/" && req.method === "GET") {
-		serveFile(path.join(__dirname, "public", "index.html"), "text/html", res);
+		serveFile(
+			path.join(__dirname, "public", "index.html"),
+			"text/html",
+			res
+		);
 	}
-  
+
 	// To load signup.html
-  else if (req.url === "/signup" && req.method === "GET") {
-		serveFile(path.join(__dirname, "public", "signup.html"), "text/html", res);
+	else if (req.url === "/signup" && req.method === "GET") {
+		serveFile(
+			path.join(__dirname, "public", "signup.html"),
+			"text/html",
+			res
+		);
 	}
-  
+
 	// To load login.html
-  else if (req.url === "/login" && req.method === "GET") {
-		serveFile(path.join(__dirname, "public", "login.html"), "text/html", res);
+	else if (req.url === "/login" && req.method === "GET") {
+		serveFile(
+			path.join(__dirname, "public", "login.html"),
+			"text/html",
+			res
+		);
 	}
-  
+
 	// To load dashboard.html
-  else if (req.url === "/Dashboard" && req.method === "GET") {
-		serveFile(path.join(__dirname, "public", "dashboard.html"), "text/html", res);
+	else if (req.url === "/Dashboard" && req.method === "GET") {
+		serveFile(
+			path.join(__dirname, "public", "dashboard.html"),
+			"text/html",
+			res
+		);
+	}
+
+	// To load food.html
+	else if (req.url === "/Food" && req.method === "GET") {
+		serveFile(
+			path.join(__dirname, "public", "food.html"),
+			"text/html",
+			res
+		);
 	}
 
 	// To get data from form in signup.html => user info : username , email , password
@@ -65,46 +90,52 @@ const server = http.createServer((req, res) => {
 		req.on("data", (chunk) => {
 			body += chunk.toString();
 		});
-	
+
 		// Listening for end of req
 		req.on("end", async () => {
 			try {
 				const data = querystring.parse(body);
 				const { username, email, password } = data;
-				
-				// Checking user Existence
-				const userExitence = await User.findOne({username});
 
-				if(userExitence) {
+				// Checking user Existence
+				const userExitence = await User.findOne({ username });
+
+				if (userExitence) {
 					res.writeHead(400, { "Content-Type": "application/json" });
-					res.end(
-						JSON.stringify({ message: "User Exists!" })
-					);
+					res.end(JSON.stringify({ message: "User Exists!" }));
 					return;
 				}
-	
+
 				// Hashing password
 				const hashedPassword = await bcrypt.hash(password, 10);
-				const newUser = new User({ username, email, password: hashedPassword });
-	
+				const newUser = new User({
+					username,
+					email,
+					password: hashedPassword,
+				});
+
 				// Saving data in db
 				await newUser.save();
-	
+
 				// Sending result to front
 				res.writeHead(200, { "Content-Type": "application/json" });
 				res.end(JSON.stringify({ message: "Signup Successful!" }));
-
 			} catch (err) {
 				// Sending error to front
 				console.error("Signup Error:", err);
 				res.writeHead(500, { "Content-Type": "application/json" });
-				res.end(JSON.stringify({ message: "Signup failed!", error: err.message }));
+				res.end(
+					JSON.stringify({
+						message: "Signup failed!",
+						error: err.message,
+					})
+				);
 			}
 		});
 	}
-	
-  // To get data from form in login.html => user info : username , password
-  else if (req.url === "/login" && req.method === "POST") {
+
+	// To get data from form in login.html => user info : username , password
+	else if (req.url === "/login" && req.method === "POST") {
 		let body = "";
 		req.on("data", (chunk) => {
 			body += chunk.toString();
@@ -117,14 +148,11 @@ const server = http.createServer((req, res) => {
 
 				// Checking db for user
 				const user = await User.findOne({ username });
-				
 
 				// Returning not found error if there is no user with given username
 				if (!user) {
 					res.writeHead(400, { "Content-Type": "application/json" });
-					res.end(
-						JSON.stringify({ message: "User Not Found!" })
-					);
+					res.end(JSON.stringify({ message: "User Not Found!" }));
 					return;
 				}
 
@@ -134,14 +162,18 @@ const server = http.createServer((req, res) => {
 				const isMatch = await bcrypt.compare(password, user.password);
 				if (!isMatch) {
 					res.writeHead(400, { "Content-Type": "application/json" });
-					res.end(
-						JSON.stringify({ message: "Wrong Password!" })
-					);
+					res.end(JSON.stringify({ message: "Wrong Password!" }));
 					return;
 				}
 
 				res.writeHead(200, { "Content-Type": "application/json" });
-				res.end(JSON.stringify({ message: "Login Successful!" , username , email}));
+				res.end(
+					JSON.stringify({
+						message: "Login Successful!",
+						username,
+						email,
+					})
+				);
 			} catch (err) {
 				console.error("Login Error:", err);
 				res.writeHead(500, { "Content-Type": "application/json" });
@@ -149,19 +181,101 @@ const server = http.createServer((req, res) => {
 			}
 		});
 	}
-  
+
 	// To load css files
-  else if (req.url.endsWith(".css")) {
+	else if (req.url.endsWith(".css")) {
 		serveFile(path.join(__dirname, "public", req.url), "text/css", res);
 	}
-  
-	// To load images
-  else if (req.url.match(/\.(jpg|jpeg|png|gif|svg)$/)) {
-		const ext = path.extname(req.url).substring(1);
-		serveFile(path.join(__dirname, "public", req.url), `image/${ext}`, res);
+
+	// To load images. It checks the extension and assign them to correct type of image.
+	else if (req.url.match(/\.(jpg|jpeg|png|gif|svg)$/)) {
+		const ext = path.extname(req.url).toLowerCase();
+		const types = {
+			".jpg": "image/jpeg",
+			".jpeg": "image/jpeg",
+			".png": "image/png",
+			".gif": "image/gif",
+			".svg": "image/svg+xml",
+		};
+
+		const filePath = path.join(__dirname, "public", req.url);
+		const contentType = types[ext] || "application/octet-stream";
+		serveFile(filePath, contentType, res);
 	}
-  
-  else {
+
+	// To load js files other than server.js
+	else if (req.url.endsWith(".js")) {
+		serveFile(
+			path.join(__dirname, "public", req.url),
+			"application/javascript",
+			res
+		);
+	}
+
+	// To update username and/or password
+	else if (req.url === "/update-profile" && req.method === "POST") {
+		let body = "";
+		req.on("data", (chunk) => {
+			body += chunk.toString();
+		});
+
+		req.on("end", async () => {
+			try {
+				const data = JSON.parse(body);
+				const { username, newPassword } = data;
+
+				// This username is the new username user wants to set
+				const existingUser = await User.findOne({ username });
+
+				// Prevent duplication if user is trying to change their username
+				if (existingUser && existingUser.username !== username) {
+					res.writeHead(400, { "Content-Type": "application/json" });
+					res.end(
+						JSON.stringify({
+							message: "این نام کاربری قبلاً ثبت شده است.",
+						})
+					);
+					return;
+				}
+
+				// Get the current username from localStorage (sent manually in body or cookie in real apps)
+				const currentUsername = req.headers["x-current-username"];
+				const user = await User.findOne({ username: currentUsername });
+
+				if (!user) {
+					res.writeHead(404, { "Content-Type": "application/json" });
+					res.end(JSON.stringify({ message: "کاربر یافت نشد." }));
+					return;
+				}
+
+				// Update username if changed
+				if (username && username !== currentUsername) {
+					user.username = username;
+				}
+
+				// Update password if requested
+				if (newPassword) {
+					const hashedPassword = await bcrypt.hash(newPassword, 10);
+					user.password = hashedPassword;
+				}
+
+				await user.save();
+
+				res.writeHead(200, { "Content-Type": "application/json" });
+				res.end(
+					JSON.stringify({
+						message: "پروفایل با موفقیت بروزرسانی شد.",
+					})
+				);
+			} catch (err) {
+				console.error("Update profile error:", err);
+				res.writeHead(500, { "Content-Type": "application/json" });
+				res.end(
+					JSON.stringify({ message: "خطا در بروزرسانی پروفایل." })
+				);
+			}
+		});
+	} else {
 		res.writeHead(404, { "Content-Type": "text/plain" });
 		res.end("Page Not Found");
 	}

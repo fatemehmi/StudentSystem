@@ -1,86 +1,54 @@
-const usernameInput = document.getElementById("username");
-const emailInput = document.getElementById("email");
-const newPasswordInput = document.getElementById("newPassword");
-const passwordSection = document.getElementById("password-section");
-const messageDiv = document.getElementById("message");
-const saveBtn = document.getElementById("saveBtn");
-
-const editUsernameBtn = document.getElementById("editUsernameBtn");
-const editPasswordBtn = document.getElementById("editPasswordBtn");
-
-let editingUsername = false;
-let changingPassword = false;
-
 document.addEventListener("DOMContentLoaded", async () => {
-	const id = localStorage.getItem("id");
+	const userId = localStorage.getItem("id");
+	if (!userId) {
+		alert("لطفاً ابتدا وارد شوید.");
+		return;
+	}
 
 	try {
-		const res = await fetch(`/api/user/${id}`);
-		
-		if (!res.ok) throw new Error("Failed to fetch user data");
-		
+		// Fetch user data
+		const res = await fetch(`/api/users/${userId}`, {
+			method: "GET",
+		});
+		if (!res.ok) throw new Error("خطا در دریافت اطلاعات کاربر");
+
 		const user = await res.json();
 
-		usernameInput.value = user.username;
-		emailInput.value = user.email;
-
-	} catch (error) {
-		console.error("Error loading user data:", error);
+		// Fill form fields
+		document.getElementById("username").value = user.username;
+		document.getElementById("email").value = user.email;
+	} catch (err) {
+		console.error(err);
+		alert("مشکلی در دریافت اطلاعات رخ داد.");
 	}
-});
-
-editUsernameBtn.addEventListener("click", () => {
-	usernameInput.disabled = false;
-	saveBtn.style.display = "inline";
-	editingUsername = true;
-});
-
-editPasswordBtn.addEventListener("click", () => {
-	passwordSection.style.display = "block";
-	saveBtn.style.display = "inline";
-	changingPassword = true;
 });
 
 document.getElementById("profileForm").addEventListener("submit", async (e) => {
 	e.preventDefault();
-	messageDiv.textContent = "";
 
-	const updatedUsername = usernameInput.value.trim();
-	const newPassword = newPasswordInput.value.trim();
+	const userId = localStorage.getItem("id");
+	const updatedUsername = document.getElementById("username").value.trim();
+	const newPassword = document.getElementById("password").value;
 
-	const res = await fetch("/update-profile", {
-		method: "POST",
-		headers: {
-			"Content-Type": "application/json",
-			// "X-Current-Username": localStorage.getItem("username")
-		},
-		body: JSON.stringify({
-			username: updatedUsername,
-			newPassword: changingPassword ? newPassword : null,
-		}),
-	});
+	const body = {
+		username: updatedUsername,
+	};
+	if (newPassword) body.password = newPassword;
 
-	const result = await res.json();
+	try {
+		const res = await fetch(`/api/users/${userId}`, {
+			method: "PUT",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify(body),
+		});
 
-	if (!res.ok) {
-		messageDiv.textContent = result.message;
-		return;
-	}
+		const data = await res.json();
+		if (!res.ok) throw new Error(data.message || "خطا در بروزرسانی");
 
-	if (changingPassword) {
-		// Clear localStorage before redirecting
-		localStorage.clear();
-
-		// Optionally notify the server to destroy session (if not already done)
-		await fetch("/logout", { method: "POST" });
-
-		// Redirect to login
-		window.location.href = "/login";
-	} else {
-		messageDiv.style.color = "green";
-		messageDiv.textContent = "تغییرات با موفقیت ذخیره شد!";
-		usernameInput.disabled = true;
-		passwordSection.style.display = "none";
-		saveBtn.style.display = "none";
+		alert("اطلاعات با موفقیت بروزرسانی شد");
+		document.getElementById("password").value = ""; // clear password field
+	} catch (err) {
+		console.error(err);
+		alert(err.message);
 	}
 });

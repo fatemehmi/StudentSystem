@@ -39,7 +39,7 @@
     </div>
 
     <div class="Profile">
-      <form class="profileForm" id="profileForm" method="post">
+      <!-- <form class="profileForm" id="profileForm" method="post">
         <div>
           <label class="profileLabel" for="username">نام کاربری</label>
           <input type="text" id="username" name="username" disabled />
@@ -55,7 +55,6 @@
           </button>
         </div>
 
-        <!-- Password section, hidden initially -->
         <div id="password-section" style="display: none;">
           <label class="profileLabel" for="newPassword">رمز عبور جدید</label>
           <input type="password" id="newPassword" name="newPassword" />
@@ -64,7 +63,20 @@
         <div class="button-group">
           <button type="submit" id="saveBtn" style="display: none;">ذخیره</button>
         </div>
+      </form> -->
+      <form id="profileForm">
+        <label>نام کاربری:</label>
+        <input type="text" name="username" id="username" required />
+        
+        <label>ایمیل:</label>
+        <input type="email" id="email" readonly />
+      
+        <label>رمز عبور:</label>
+        <input type="password" name="password" id="password" />
+      
+        <button type="submit">Save Changes</button>
       </form>
+      
       <div id="message" style="color: red; margin-top: 10px;"></div>
     </div>
 

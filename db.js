@@ -24,7 +24,7 @@ const User = mongoose.model("User", userSchema);
 
 // Reserve
 const reserveSchema = new mongoose.Schema({
-	userId: Number,
+	userId: String,
 	reserveDate: Date,
 	foodName: String,
 	restaurantName: String,

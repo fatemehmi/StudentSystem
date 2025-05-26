@@ -4,7 +4,7 @@ const fs = require("fs");
 const path = require("path");
 const querystring = require("querystring");
 const bcrypt = require("bcrypt");
-const { Food, User } = require("./db");
+const { Food, User, Reserve } = require("./db");
 
 // To read html and css files
 function serveFile(filePath, contentType, res) {
@@ -88,11 +88,6 @@ const server = http.createServer((req, res) => {
 			});
 	}
 
-	// To reserve food
-	else if (req.url === "/api/Reserve" && req.method === "POST") {
-		
-	}
-
 	// To request for user data
 	else if (req.url.startsWith("/api/user/") && req.method === "GET") {
 		const userId = req.url.split("/")[3];
@@ -118,6 +113,104 @@ const server = http.createServer((req, res) => {
 				console.error("Error fetching user by ID:", err);
 				res.writeHead(500, { "Content-Type": "application/json" });
 				res.end(JSON.stringify({ message: "خطا در دریافت کاربر" }));
+			});
+	}
+
+	// To update user data
+	else if (req.url.startsWith("/api/user/") && req.method === "PUT") {
+		const userId = req.url.split("/")[3];
+
+		let body = '';
+    req.on('data', chunk => {
+      body += chunk.toString();
+    });
+
+    req.on('end', async () => {
+      try {
+        const data = JSON.parse(body);
+
+        // Validate input
+        if (!data.username || typeof data.username !== 'string') {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          return res.end(JSON.stringify({ message: 'نام کاربری معتبر نیست' }));
+        }
+
+        const updateFields = {
+          username: data.username,
+        };
+
+        if (data.password) {
+          // Hash new password before saving
+          const saltRounds = 10;
+          const hashedPassword = await bcrypt.hash(data.password, saltRounds);
+          updateFields.password = hashedPassword;
+        }
+
+        const updatedUser = await User.findByIdAndUpdate(userId, updateFields, { new: true, runValidators: true });
+
+        if (!updatedUser) {
+          res.writeHead(404, { 'Content-Type': 'application/json' });
+          return res.end(JSON.stringify({ message: 'کاربر یافت نشد' }));
+        }
+
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ message: 'اطلاعات با موفقیت بروزرسانی شد' }));
+
+      } catch (err) {
+        console.error('Error updating user:', err);
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ message: 'خطا در بروزرسانی اطلاعات' }));
+      }
+    });
+  
+	}
+
+	// To get reserves of day
+	else if (req.url.startsWith("/api/reserves") && req.method === "GET") {
+		const urlParts = new URL(req.url, `http://${req.headers.host}`);
+		const userId = urlParts.searchParams.get("userId");
+		const dateParam = urlParts.searchParams.get("date");
+
+		const date = new Date(dateParam)
+
+		Reserve.find({
+			userId,
+			reserveDate: date,
+		})
+			.then((reserves) => {
+				res.writeHead(200, { "Content-Type": "application/json" });
+				res.end(JSON.stringify(reserves));
+			})
+			.catch((err) => {
+				console.error("Error fetching reserves:", err);
+				res.writeHead(500, { "Content-Type": "application/json" });
+				res.end(
+					JSON.stringify({
+						message: "خطا در دریافت رزروها",
+						error: err.message,
+					})
+				);
+			});
+	}
+
+	// To delete reserve
+	else if (req.url.startsWith("/api/reserves/") && req.method === "DELETE") {
+		const id = req.url.split("/").pop();
+
+		Reserve.findByIdAndDelete(id)
+			.then(() => {
+				res.writeHead(200, { "Content-Type": "application/json" });
+				res.end(JSON.stringify({ message: "رزرو حذف شد" }));
+			})
+			.catch((err) => {
+				console.error("Error deleting reserve:", err);
+				res.writeHead(500, { "Content-Type": "application/json" });
+				res.end(
+					JSON.stringify({
+						message: "حذف رزرو با خطا مواجه شد",
+						error: err.message,
+					})
+				);
 			});
 	}
 
@@ -213,6 +306,53 @@ const server = http.createServer((req, res) => {
 				console.error("Login Error:", err);
 				res.writeHead(500, { "Content-Type": "application/json" });
 				res.end(JSON.stringify({ message: "Login Failed!" }));
+			}
+		});
+	}
+
+	// To reserve food
+	else if (req.url === "/api/Reserve" && req.method === "POST") {
+		let body = "";
+		req.on("data", (chunk) => {
+			body += chunk.toString();
+		});
+
+		req.on("end", async () => {
+			try {
+				const data = querystring.parse(body);
+				const { userId, date, food, restaurant } = data;
+
+				const foodDoc = await Food.findOne({ name: food });
+				const price = foodDoc?.price;
+
+				if (!foodDoc) {
+					res.writeHead(404, { "Content-Type": "application/json" });
+					return res.end(
+						JSON.stringify({ message: "Food not found" })
+					);
+				}
+
+				const newReserve = new Reserve({
+					userId,
+					reserveDate: new Date(date),
+					foodName: food,
+					restaurantName: restaurant,
+					price,
+				});
+
+				await newReserve.save();
+
+				res.writeHead(200, { "Content-Type": "application/json" });
+				res.end(JSON.stringify({ message: "Reserve Successful!" }));
+			} catch (err) {
+				console.error("Reserve Error:", err);
+				res.writeHead(500, { "Content-Type": "application/json" });
+				res.end(
+					JSON.stringify({
+						message: "Reserve failed!",
+						error: err.message,
+					})
+				);
 			}
 		});
 	}

@@ -51,15 +51,15 @@
 
         <!-- انتخاب رستوران -->
         <label for="restaurant">رستوران:</label>
-        <select id="restaurant">
+        <select id="restaurant" name="restaurant">
           <option value="">انتخاب کنید</option>
-          <option value="1">رستوران سبحان</option>
-          <option value="2">سلف مرکزی (خواهران)</option>
+          <option value="رستوران سبحان">رستوران سبحان</option>
+          <option value="سلف مرکزی (خواهران)">سلف مرکزی (خواهران)</option>
         </select>
 
         <!-- انتخاب تاریخ -->
         <label for="date">تاریخ:</label>
-        <input type="date" id="date" />
+        <input type="date" name="date" id="date" />
 
         <!-- انتخاب غذا -->
         <label>انتخاب غذا:</label>
@@ -72,7 +72,7 @@
       </form>
 
       <!-- لیست غذاهای رزرو شده -->
-      <div class="list-section">
+      <div id="list-section" class="list-section" style="display: none;">
         <table>
           <thead>
             <tr>

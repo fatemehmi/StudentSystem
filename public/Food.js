@@ -1,5 +1,3 @@
-// const id = localStorage.getItem("id");
-
 // Fetch Food data
 document.addEventListener ("DOMContentLoaded" , () => {
   fetch("/api/foods")
@@ -42,159 +40,103 @@ document.addEventListener ("DOMContentLoaded" , () => {
 document.getElementById('ReserveForm').addEventListener('submit', function (e) {
   e.preventDefault();
 
+  const userId = localStorage.getItem("id");
+  
+
   const selectedFoodInput = document.querySelector('input[name="food"]:checked');
   if (!selectedFoodInput) {
     alert("لطفاً یک غذا انتخاب کنید");
     return;
   }
 
-  const food = selectedFoodInput.value;
-
-  const userId = localStorage.getItem("id");
   const date = document.getElementById('date').value;
+  if (!date) {
+    alert("لطفاً تاریخ را انتخاب کنید");
+    return;
+  }
+
   const restaurant = document.getElementById('restaurant').value;
+  if (!restaurant) {
+    alert("لطفاً رستوران را انتخاب کنید");
+    return;
+  }
+
+  const formData = new FormData(e.target);
+  formData.append("userId", userId);
+  const data = new URLSearchParams(formData);
 
   fetch('/api/Reserve', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ userId, date, food, restaurant, price }),
+    body: data,
   })
     .then((res) => res.json())
     .then((data) => {
       alert(data.message);
+      document.getElementById('ReserveForm').reset();
     })
     .catch((err) => {
       console.error('Error:', err);
       alert('رزرو با مشکل مواجه شد');
-    });
+    });      
 });
 
+// receipt
+document.getElementById("date").addEventListener("change", function () {
+  const userId = localStorage.getItem("id");
+  const date = this.value;
 
-// // Allow selecting a food item
-// document.querySelectorAll('.food-item').forEach((item) => {
-//   item.addEventListener('click', () => {
-//     document.querySelectorAll('.food-item').forEach((el) => el.classList.remove('selected'));
-//     item.classList.add('selected');
+  fetch(`/api/reserves?userId=${userId}&date=${date}`)
+    .then((res) => res.json())
+    .then((data) => {
+      const section = document.getElementById("list-section");
+      const tbody = document.getElementById("order-list");
+      tbody.innerHTML = "";
 
-//   });
-// });
+      if (data.length === 0) {
+        section.style.display = "none";
+        return;
+      }
 
-// const server = http.createServer((req, res) => {
-// 	if (req.url === "/" && req.method === "GET") {
-// 		serveFile(
-// 			path.join(__dirname, "public", "index.html"),
-// 			"text/html",
-// 			res
-// 		);
-// 	}
+      data.forEach((reserve) => {
+        const tr = document.createElement("tr");
 
-//   else if (req.url === "/Food" && req.method === "GET") {
-// 		serveFile(
-// 			path.join(__dirname, "public", "food.html"),
-// 			"text/html",
-// 			res
-// 		);
-// 	}
+        const dateTd = document.createElement("td");
+        dateTd.textContent = new Date(reserve.reserveDate).toLocaleDateString("fa-IR");
 
-// 	// دریافت موجودی کاربر
-// 	else if (req.url.startsWith("/api/balance/") && req.method === "GET") {
-// 		const userId = req.url.split("/").pop();
-// 		db.get(
-// 			"SELECT balance FROM finances WHERE user_id = ?",
-// 			[userId],
-// 			(err, row) => {
-// 				if (err) {
-// 					res.writeHead(500, { "Content-Type": "application/json" });
-// 					return res.end(JSON.stringify({ error: "DB Error" }));
-// 				}
-// 				res.writeHead(200, { "Content-Type": "application/json" });
-// 				res.end(JSON.stringify({ balance: row ? row.balance : 0 }));
-// 			}
-// 		);
-// 	}
+        const foodTd = document.createElement("td");
+        foodTd.textContent = reserve.foodName;
 
-// 	// افزایش موجودی
-// 	else if (req.url === "/api/balance/add" && req.method === "POST") {
-// 		let body = "";
-// 		req.on("data", (chunk) => {
-// 			body += chunk.toString();
-// 		});
-// 		req.on("end", () => {
-// 			const data = JSON.parse(body);
-// 			const { user_id, amount } = data;
-// 			db.run(
-// 				`INSERT INTO finances (user_id, balance) VALUES (?, ?) ON CONFLICT(user_id) DO UPDATE SET balance = balance + ?`,
-// 				[user_id, amount, amount],
-// 				(err) => {
-// 					if (err) {
-// 						res.writeHead(500, {
-// 							"Content-Type": "application/json",
-// 						});
-// 						return res.end(
-// 							JSON.stringify({ error: "Update Failed" })
-// 						);
-// 					}
-// 					res.writeHead(200, { "Content-Type": "application/json" });
-// 					res.end(JSON.stringify({ success: true }));
-// 				}
-// 			);
-// 		});
-// 	}
+        const restaurantTd = document.createElement("td");
+        restaurantTd.textContent = reserve.restaurantName;
 
-// 	// رزرو غذا
-// 	else if (req.url === "/Food" && req.method === "POST") {
-// 		let body = "";
-// 		req.on("data", (chunk) => {
-// 			body += chunk.toString();
-// 		});
-// 		req.on("end", () => {
-// 			try {
-// 				const { date, food, restaurant, price } =
-// 					JSON.parse(body);
+        const priceTd = document.createElement("td");
+        priceTd.textContent = `${Number(reserve.price).toLocaleString()} تومان`;
 
-//           const user = User.findOne({username})
+        const deleteTd = document.createElement("td");
+        const deleteBtn = document.createElement("button");
+        deleteBtn.textContent = "حذف";
+        deleteBtn.onclick = () => {
+          fetch(`/api/reserves/${reserve._id}`, {
+            method: "DELETE",
+          })
+            .then((res) => res.json())
+            .then((msg) => {
+              alert(msg.message);
+              tr.remove(); // Remove row from UI
+              if (tbody.children.length === 0) {
+                section.style.display = "none";
+              }
+            });
+        };
 
-// 				const newReserve = new Reserve({
-// 					userId: user.id,
-// 					reserveDate: date,
-// 					foodName: food,
-// 					restaurantName: restaurant,
-// 					price,
-// 				});
+        deleteTd.appendChild(deleteBtn);
+        tr.append(dateTd, foodTd, restaurantTd, priceTd, deleteTd);
+        tbody.appendChild(tr);
+      });
 
-//         newReserve.save();
-
-// 				res.writeHead(200, { "Content-Type": "application/json" });
-// 				res.end(JSON.stringify({ message: "Reserve Successful!" }));
-// 			} catch (error) {
-// 				console.error("Reserve Error:", err);
-// 				res.writeHead(500, { "Content-Type": "application/json" });
-// 				res.end(
-// 					JSON.stringify({
-// 						message: "Reserve failed!",
-// 						error: err.message,
-// 					})
-// 				);
-// 			}
-// 		});
-// 	}
-
-// 	// دریافت رزروها
-// 	else if (req.url.startsWith("/api/reservations/") && req.method === "GET") {
-// 		const userId = req.url.split("/").pop();
-// 		db.all(
-// 			"SELECT * FROM reservations WHERE user_id = ?",
-// 			[userId],
-// 			(err, rows) => {
-// 				if (err) {
-// 					res.writeHead(500, { "Content-Type": "application/json" });
-// 					return res.end(JSON.stringify({ error: "DB error" }));
-// 				}
-// 				res.writeHead(200, { "Content-Type": "application/json" });
-// 				res.end(JSON.stringify(rows));
-// 			}
-// 		);
-// 	}
-// });
+      section.style.display = "block"; // Show table
+    })
+    .catch((err) => {
+      console.error("Error loading reservations:", err);
+    });
+});

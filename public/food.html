@@ -47,7 +47,7 @@
       </div>
 
       <!-- فرم رزرو -->
-      <div class="form-section">
+      <form action="/Food" method="post" id="ReserveForm" class="form-section">
 
         <!-- انتخاب رستوران -->
         <label for="restaurant">رستوران:</label>
@@ -63,24 +63,13 @@
 
         <!-- انتخاب غذا -->
         <label>انتخاب غذا:</label>
-        <div class="food-list">
-          <div class="food-item" data-name="چلوکباب" data-price="95000">
-            <img src="./image/food1.jpg" alt="چلوکباب" />
-            <p>چلوکباب</p>
-            <span>95,000 تومان</span>
-          </div>
-          <div class="food-item" data-name="قرمه‌سبزی" data-price="85000">
-            <img src="./image/food2.jpg" alt="قرمه‌سبزی" />
-            <p>قرمه‌سبزی</p>
-            <span>85,000 تومان</span>
-          </div>
-          <!-- غذای بیشتر -->
+        <div id="food-list" class="food-list">
         </div>
 
-        <button id="add-meal-btn">
+        <button type="submit" id="add-meal-btn">
           افزودن
         </button>
-      </div>
+      </form>
 
       <!-- لیست غذاهای رزرو شده -->
       <div class="list-section">
@@ -89,11 +78,12 @@
             <tr>
               <th>تاریخ</th>
               <th>غذا</th>
-              <th>عملیات</th>
+              <th>رستوران</th>
+              <th>قیمت</th>
+              <th></th>
             </tr>
           </thead>
           <tbody id="order-list">
-            <!-- سفارشات اضافه خواهند شد -->
           </tbody>
         </table>
       </div>

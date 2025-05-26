@@ -4,25 +4,7 @@ const fs = require("fs");
 const path = require("path");
 const querystring = require("querystring");
 const bcrypt = require("bcrypt");
-
-// Creating mongodb server
-mongoose
-	.connect("mongodb://localhost:27017/SignupAndLoginUsers", {
-		useNewUrlParser: true,
-		useUnifiedTopology: true,
-	})
-	.then(() => console.log("Connected to MongoDB using Mongoose"))
-	.catch((err) => console.error("Connection failed!", err));
-
-// Specifying Schema -- not essential
-const userSchema = new mongoose.Schema({
-	username: String,
-	email: String,
-	password: String,
-});
-
-// Creating model using Schema
-const User = mongoose.model("User", userSchema);
+const { Food, User } = require("./db");
 
 // To read html and css files
 function serveFile(filePath, contentType, res) {
@@ -81,6 +63,62 @@ const server = http.createServer((req, res) => {
 			"text/html",
 			res
 		);
+	}
+
+	// To request for food data
+	else if (req.url === "/api/foods" && req.method === "GET") {
+		Food.find()
+			.then((foods) => {
+				const foodsWithBase64Images = foods.map((food) => ({
+					name: food.name,
+					price: food.price,
+					image: `data:${
+						food.image.contentType
+					};base64,${food.image.data.toString("base64")}`,
+				}));
+				res.writeHead(200, { "Content-Type": "application/json" });
+				res.end(JSON.stringify(foodsWithBase64Images));
+			})
+			.catch((err) => {
+				console.error("Error fetching foods:", err);
+				res.writeHead(500, { "Content-Type": "application/json" });
+				res.end(
+					JSON.stringify({ message: "خطا در دریافت لیست غذاها" })
+				);
+			});
+	}
+
+	// To reserve food
+	else if (req.url === "/api/Reserve" && req.method === "POST") {
+		
+	}
+
+	// To request for user data
+	else if (req.url.startsWith("/api/user/") && req.method === "GET") {
+		const userId = req.url.split("/")[3];
+
+		if (!userId) {
+			res.writeHead(400, { "Content-Type": "application/json" });
+			res.end(JSON.stringify({ message: "User ID is required" }));
+			return;
+		}
+
+		User.findById(userId)
+			.select("-password")
+			.then((user) => {
+				if (!user) {
+					res.writeHead(404, { "Content-Type": "application/json" });
+					res.end(JSON.stringify({ message: "User not found" }));
+					return;
+				}
+				res.writeHead(200, { "Content-Type": "application/json" });
+				res.end(JSON.stringify(user));
+			})
+			.catch((err) => {
+				console.error("Error fetching user by ID:", err);
+				res.writeHead(500, { "Content-Type": "application/json" });
+				res.end(JSON.stringify({ message: "خطا در دریافت کاربر" }));
+			});
 	}
 
 	// To get data from form in signup.html => user info : username , email , password
@@ -156,8 +194,6 @@ const server = http.createServer((req, res) => {
 					return;
 				}
 
-				const email = user.email;
-
 				// Returning error if password is wrong
 				const isMatch = await bcrypt.compare(password, user.password);
 				if (!isMatch) {
@@ -170,8 +206,7 @@ const server = http.createServer((req, res) => {
 				res.end(
 					JSON.stringify({
 						message: "Login Successful!",
-						username,
-						email,
+						id: user.id,
 					})
 				);
 			} catch (err) {
@@ -203,10 +238,19 @@ const server = http.createServer((req, res) => {
 		serveFile(filePath, contentType, res);
 	}
 
-	// To load js files other than server.js
+	// To load js files in public
 	else if (req.url.endsWith(".js")) {
 		serveFile(
 			path.join(__dirname, "public", req.url),
+			"application/javascript",
+			res
+		);
+	}
+
+	// To load js files out of public
+	else if (req.url.endsWith(".js")) {
+		serveFile(
+			path.join(__dirname, "", req.url),
 			"application/javascript",
 			res
 		);
@@ -275,7 +319,10 @@ const server = http.createServer((req, res) => {
 				);
 			}
 		});
-	} else {
+	}
+
+	// Default
+	else {
 		res.writeHead(404, { "Content-Type": "text/plain" });
 		res.end("Page Not Found");
 	}

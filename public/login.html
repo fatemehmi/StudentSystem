@@ -32,8 +32,7 @@
           alert(data.message);
           if (data.message === "Login Successful!") {
             window.location.href = "/Dashboard";
-            localStorage.setItem("username", data.username);
-            localStorage.setItem("email", data.email);
+            localStorage.setItem("id", data.id);
           }
         })
         .catch((err) => {

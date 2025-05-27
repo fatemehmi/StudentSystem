@@ -11,27 +11,49 @@
 }
 
 .Profile {
-  width: 1000px;
-  height: 80%;
+  width: 800px;
+  margin: auto;
+  background-color: white;
   border-radius: 10px;
-  margin-top: 5%;
-  margin-right: calc(50vw - 625px);
-  background-color: gray;
-  padding: 50px;
-  font-size: 25px;
-  font-weight: 600;
+  padding: 24px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
 }
 
-.profileForm {
-  width: 300px;
-  height: 500px;
+#profileForm {
+  height: 350px;
   display: flex;
   flex-direction: column;
+  justify-content: center;
+  align-items: center;
   gap: 30px;
 }
 
-.profileLabel {
+#profileForm div {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+}
+
+#profileForm div label {
+  display: inline-block;
+  width: 200px;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+#profileForm div input {
+  height: 30px;
   width: 300px;
+  border: none;
+  border: 0.02rem solid rgba(0,0,0,0.1);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  border-radius: 8px;
+  padding-right: 15px;
+  padding-left: 4px;
+}
+
+#profileForm div input:focus {
+  outline: 0.02rem solid rgba(168, 161, 231, 1);
 }
 
 .edit {
@@ -45,4 +67,18 @@
 .navbar_container button a:visited {
   text-decoration: none;
   color: black;
+}
+
+#btn {
+  height: 40px;
+  width: 150px;
+  position: absolute;
+  left: 390px;
+  bottom: 230px;
+  border: none;
+  background: rgb(5, 147, 5);
+  border-radius: 8px;
+  font-size: 20px;
+  font-weight: 600;
+  color: white;
 }

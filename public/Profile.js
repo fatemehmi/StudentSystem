@@ -6,15 +6,13 @@ document.addEventListener("DOMContentLoaded", async () => {
 	}
 
 	try {
-		// Fetch user data
-		const res = await fetch(`/api/users/${userId}`, {
+		const res = await fetch(`/api/user/${userId}`, {
 			method: "GET",
 		});
 		if (!res.ok) throw new Error("خطا در دریافت اطلاعات کاربر");
 
 		const user = await res.json();
 
-		// Fill form fields
 		document.getElementById("username").value = user.username;
 		document.getElementById("email").value = user.email;
 	} catch (err) {
@@ -36,7 +34,7 @@ document.getElementById("profileForm").addEventListener("submit", async (e) => {
 	if (newPassword) body.password = newPassword;
 
 	try {
-		const res = await fetch(`/api/users/${userId}`, {
+		const res = await fetch(`/api/user/${userId}`, {
 			method: "PUT",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify(body),

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="./menu.style.css" />
+  <link rel="stylesheet" href="./request.style.css" />
+  <title>Request</title>
+</head>
+
+<body>
+  <div class="request_container">
+    <div class="menu">
+      <div class="menu_container">
+        <button>
+          <a href="/Dashboard">
+            پنل کاربری
+          </a>
+        </button>
+        <button>
+          <a href="/Food">
+            رزرو غذا
+          </a>
+        </button>
+        <button>
+          <a style="color: rgb(11, 11, 114); font-size: larger ; font-weight: bold;" href="/Request">
+            درخواست ها
+          </a>
+        </button>
+        <button>
+          <a href="/Course">
+            لیست دروس نیمسال
+          </a>
+        </button>
+        <button>
+          <a href="/Payment">
+            پرداخت ها و امور مالی
+          </a>
+        </button>
+        <button>
+          <a href="/News">
+            پیام ها و اطلاعیه ها
+          </a>
+        </button>
+        <button id="logout">
+          <a href="/Login">
+            خروج
+          </a>
+        </button>
+      </div>
+    </div>
+
+    <div class="container">
+      <form id="requestform">
+        <div class="to">
+          <label for="to">ارسال به :</label>
+          <input name="to" id="to" type="text">
+        </div>
+        <textarea rows="10" id="requestContent" placeholder="درخواست خود را اینجا بنویسید"></textarea>
+        <button id="saveRequestBtn">ثبت درخواست</button>
+      </form>
+      
+      <div id="list-section" class="list-section" style="display: none;" >
+        <table>
+          <thead>
+            <tr>
+              <th>شماره درخواست</th>
+              <th>ارسال به</th>
+              <th>تاریخ ثبت درخواست</th>
+              <th>وضعیت</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="order-list">
+          </tbody>
+        </table>
+      </div>
+
+      <div id="requestResult">
+      </div>
+    </div>
+  </div>
+
+  <script src="request.js"></script>
+</body>
+
+</html>

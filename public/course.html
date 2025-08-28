@@ -5,16 +5,16 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="./menu.style.css" />
-  <link rel="stylesheet" href="./dashboard.style.css" />
-  <title>Dashboard</title>
+  <link rel="stylesheet" href="./course.style.css" />
+  <title>Course</title>
 </head>
 
 <body>
-  <div class="dashboard_container">
+  <div class="course_container">
     <div class="menu">
       <div class="menu_container">
         <button>
-          <a style="color: rgb(11, 11, 114); font-size: larger ; font-weight: bold;" href="/Dashboard">
+          <a href="/Dashboard">
             پنل کاربری
           </a>
         </button>
@@ -29,7 +29,7 @@
           </a>
         </button>
         <button>
-          <a href="/Course">
+          <a style="color: rgb(11, 11, 114); font-size: larger ; font-weight: bold;" href="/Course">
             لیست دروس نیمسال
           </a>
         </button>
@@ -51,30 +51,37 @@
       </div>
     </div>
 
-    <div class="Profile">
-      <form id="profileForm">
-        <div>
-          <label for="username">نام کاربری:</label>
-          <input type="text" name="username" id="username" required />
-        </div>
-
-        <div>
-          <label for="email">ایمیل:</label>
-          <input type="email" id="email" tabindex="-1" readonly disabled />
-        </div>
-
-        <div>
-          <label for="password">رمز عبور:</label>
-          <input type="text" name="password" id="password" />
-        </div>
-
-        <button id="btn" type="submit">ذخیره اطلاعات</button>
-      </form>
+    <div class="course_display_container">
+      <div class="semesterSelection">
+        <label for="semesterSelect">تغییر نیمسال تحصیلی:</label>
+        <select id="semesterSelect"></select>
+      </div>
+      
+      <h2 class="title">دروس ثبت‌شده</h2>
+      <table id="courseTable">
+        <thead>
+          <tr>
+            <th>کد درس</th>
+            <th>نام درس</th>
+            <th>استاد</th>
+            <th>واحد</th>
+            <th>گروه درس</th>
+            <th>نمره</th>
+            <th>وضع</th>
+            <th>تاریخ امتحان</th>
+            <th>ساعت امتحان</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Rows will be inserted by JS -->
+        </tbody>
+      </table>
     </div>
+    
 
   </div>
 
-  <script src="dashboard.js"></script>
+  <script src="course.js"></script>
 </body>
 
 </html>

@@ -1,0 +1,84 @@
+* , body {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+  font-family: Arial, Helvetica, sans-serif;
+  direction: rtl;
+}
+
+.container{
+  background-color: blueviolet;
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  height: 100vh;
+}
+
+.login_card {
+  margin-top: 32vh;
+  height: 40vh;
+  width: 30vw;
+  background-color: white;
+  border-radius: 10px;
+  gap: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  font-size: xx-large;
+  font-weight: 600;
+  padding-top: 30px;
+  padding-bottom: 30px;
+  box-shadow: gray 0px 0px 2px 3px;
+  color: blueviolet;
+}
+
+#loginForm {
+  display: flex;
+  justify-content: center;
+  align-items: centre;
+  flex-direction: column;
+  gap: 20px;
+}
+
+
+.login_card input {
+  width: 25vw;
+  height: 5vh;
+  border-radius: 5px;
+  border: 2px solid gray;
+  padding: 10px;
+  direction: rtl;
+  text-align: left;
+}
+
+input::placeholder {
+  direction: rtl;
+  text-align: left;
+}
+
+.loginbtn {
+  width: 25vw;
+  height: 5vh;
+  border-radius: 5px;
+  border: none;
+  background: blueviolet;
+  color: white;
+  font-size: x-large;
+  font-weight: bold;
+}
+
+.no_account {
+  font-size: medium;
+  align-self: flex-start;
+  margin-right: 40px;
+  color: black;
+  font-weight: 500;
+}
+
+.no_account span a {
+  color: blueviolet;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+}

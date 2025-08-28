@@ -2,7 +2,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 	const userId = localStorage.getItem("id");
 	if (!userId) {
 		alert("لطفاً ابتدا وارد شوید.");
-		return;
+		return window.location.href="Login";
 	}
 
 	try {
@@ -44,9 +44,17 @@ document.getElementById("profileForm").addEventListener("submit", async (e) => {
 		if (!res.ok) throw new Error(data.message || "خطا در بروزرسانی");
 
 		alert("اطلاعات با موفقیت بروزرسانی شد");
-		document.getElementById("password").value = ""; // clear password field
+		document.getElementById("password").value = "";
+
+		localStorage.removeItem("id");
+		window.location.href = "Login";
+
 	} catch (err) {
 		console.error(err);
 		alert(err.message);
 	}
 });
+
+document.getElementById("logout").addEventListener("click" , () => {
+	localStorage.removeItem("id");
+})

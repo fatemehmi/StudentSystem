@@ -4,7 +4,7 @@ const fs = require("fs");
 const path = require("path");
 const querystring = require("querystring");
 const bcrypt = require("bcrypt");
-const { Food, User, Reserve } = require("./db");
+const { Food, User, Reserve, Request, UserCourse, Course } = require("./db");
 
 // To read html and css files
 function serveFile(filePath, contentType, res) {
@@ -30,7 +30,7 @@ const server = http.createServer((req, res) => {
 	}
 
 	// To load signup.html
-	else if (req.url === "/signup" && req.method === "GET") {
+	else if (req.url === "/Signup" && req.method === "GET") {
 		serveFile(
 			path.join(__dirname, "public", "signup.html"),
 			"text/html",
@@ -39,7 +39,7 @@ const server = http.createServer((req, res) => {
 	}
 
 	// To load login.html
-	else if (req.url === "/login" && req.method === "GET") {
+	else if (req.url === "/Login" && req.method === "GET") {
 		serveFile(
 			path.join(__dirname, "public", "login.html"),
 			"text/html",
@@ -65,11 +65,48 @@ const server = http.createServer((req, res) => {
 		);
 	}
 
+	// To load request.html
+	else if (req.url === "/Request" && req.method === "GET") {
+		serveFile(
+			path.join(__dirname, "public", "request.html"),
+			"text/html",
+			res
+		);
+	}
+
+	// To load course.html
+	else if (req.url === "/Course" && req.method === "GET") {
+		serveFile(
+			path.join(__dirname, "public", "course.html"),
+			"text/html",
+			res
+		);
+	}
+
+	// To load payment.html
+	else if (req.url === "/Payment" && req.method === "GET") {
+		serveFile(
+			path.join(__dirname, "public", "payment.html"),
+			"text/html",
+			res
+		);
+	}
+
+	// To load news.html
+	else if (req.url === "/News" && req.method === "GET") {
+		serveFile(
+			path.join(__dirname, "public", "news.html"),
+			"text/html",
+			res
+		);
+	}
+
 	// To request for food data
 	else if (req.url === "/api/foods" && req.method === "GET") {
 		Food.find()
 			.then((foods) => {
 				const foodsWithBase64Images = foods.map((food) => ({
+					restaurant: food.restaurant,
 					name: food.name,
 					price: food.price,
 					image: `data:${
@@ -181,23 +218,89 @@ const server = http.createServer((req, res) => {
 		});
 	}
 
-	// To get reserves of day
-	else if (req.url.startsWith("/api/reserves") && req.method === "GET") {
-		const urlParts = new URL(req.url, `http://${req.headers.host}`);
-		const userId = urlParts.searchParams.get("userId");
-		const dateParam = urlParts.searchParams.get("date");
+	// To update user balance
+	else if (
+		req.url.startsWith("/api/users/balance/") &&
+		req.method === "PUT"
+	) {
+		const userId = req.url.split("/")[4];
+		let body = "";
 
-		const date = new Date(dateParam);
+		req.on("data", (chunk) => {
+			body += chunk.toString();
+		});
 
-		Reserve.find({
-			userId,
-			reserveDate: date,
-		})
-			.then((reserves) => {
+		req.on("end", async () => {
+			try {
+				const data = JSON.parse(body);
+				const { balance } = data;
+
+				if (balance === undefined) {
+					res.writeHead(400, { "Content-Type": "application/json" });
+					return res.end(
+						JSON.stringify({
+							message: "مقدار موجودی ارسال نشده است",
+						})
+					);
+				}
+
+				const num = Number(balance);
+
+				const updatedUser = await User.findByIdAndUpdate(
+					userId,
+					{ balance: num },
+					{ new: true }
+				).select("-password");
+
+				if (!updatedUser) {
+					res.writeHead(404, { "Content-Type": "application/json" });
+					return res.end(
+						JSON.stringify({ message: "کاربر پیدا نشد" })
+					);
+				}
+
 				res.writeHead(200, { "Content-Type": "application/json" });
-				res.end(JSON.stringify(reserves));
-			})
-			.catch((err) => {
+				res.end(
+					JSON.stringify({
+						message: "موجودی با موفقیت بروزرسانی شد",
+						user: updatedUser,
+					})
+				);
+			} catch (err) {
+				console.error("Error updating balance:", err);
+				res.writeHead(500, { "Content-Type": "application/json" });
+				res.end(JSON.stringify({ message: "خطا در بروزرسانی موجودی" }));
+			}
+		});
+	}
+
+	// To get reserves of day -- receipt
+	else if (req.url.startsWith("/api/reserves") && req.method === "GET") {
+		(async () => {
+			const urlParts = new URL(req.url, `http://${req.headers.host}`);
+			const userId = urlParts.searchParams.get("userId");
+			const dateParam = urlParts.searchParams.get("date");
+
+			const date = new Date(dateParam);
+
+			try {
+				const reserves = await Reserve.find({ userId, date });
+
+				const enrichedReserves = await Promise.all(
+					reserves.map(async (reserve) => {
+						const food = await Food.findById(reserve.foodId).select(
+							"name"
+						);
+						return {
+							...reserve.toObject(),
+							meal: food ? food.name : null,
+						};
+					})
+				);
+
+				res.writeHead(200, { "Content-Type": "application/json" });
+				res.end(JSON.stringify(enrichedReserves));
+			} catch (err) {
 				console.error("Error fetching reserves:", err);
 				res.writeHead(500, { "Content-Type": "application/json" });
 				res.end(
@@ -206,32 +309,59 @@ const server = http.createServer((req, res) => {
 						error: err.message,
 					})
 				);
-			});
+			}
+		})();
 	}
 
 	// To delete reserve
 	else if (req.url.startsWith("/api/reserves/") && req.method === "DELETE") {
 		const id = req.url.split("/").pop();
 
-		Reserve.findByIdAndDelete(id)
-			.then(() => {
+		(async () => {
+			try {
+				const reserve = await Reserve.findById(id);
+				if (!reserve) {
+					res.writeHead(404, { "Content-Type": "application/json" });
+					return res.end(
+						JSON.stringify({ message: "رزرو پیدا نشد" })
+					);
+				}
+
+				const { userId, price } = reserve;
+
+				const user = await User.findById(userId);
+				if (!user) {
+					res.writeHead(404, { "Content-Type": "application/json" });
+					return res.end(
+						JSON.stringify({ message: "کاربر پیدا نشد" })
+					);
+				}
+
+				await Reserve.findByIdAndDelete(id);
+				user.balance += price;
+				await user.save();
+
 				res.writeHead(200, { "Content-Type": "application/json" });
-				res.end(JSON.stringify({ message: "رزرو حذف شد" }));
-			})
-			.catch((err) => {
+				res.end(
+					JSON.stringify({
+						message: "رزرو حذف شد و مبلغ بازگردانده شد",
+					})
+				);
+			} catch (err) {
 				console.error("Error deleting reserve:", err);
 				res.writeHead(500, { "Content-Type": "application/json" });
 				res.end(
 					JSON.stringify({
-						message: "حذف رزرو با خطا مواجه شد",
+						message: "خطا در حذف رزرو",
 						error: err.message,
 					})
 				);
-			});
+			}
+		})();
 	}
 
 	// To get data from form in signup.html => user info : username , email , password
-	else if (req.url === "/signup" && req.method === "POST") {
+	else if (req.url === "/Signup" && req.method === "POST") {
 		// To gather user info and put them together
 		let body = "";
 		req.on("data", (chunk) => {
@@ -282,7 +412,7 @@ const server = http.createServer((req, res) => {
 	}
 
 	// To get data from form in login.html => user info : username , password
-	else if (req.url === "/login" && req.method === "POST") {
+	else if (req.url === "/Login" && req.method === "POST") {
 		let body = "";
 		req.on("data", (chunk) => {
 			body += chunk.toString();
@@ -329,49 +459,234 @@ const server = http.createServer((req, res) => {
 	// To reserve food
 	else if (req.url === "/api/Reserve" && req.method === "POST") {
 		let body = "";
-		req.on("data", (chunk) => {
-			body += chunk.toString();
-		});
+		req.on("data", (chunk) => (body += chunk.toString()));
 
 		req.on("end", async () => {
 			try {
 				const data = querystring.parse(body);
 				const { userId, date, food, restaurant } = data;
 
-				const foodDoc = await Food.findOne({ name: food });
-				const price = foodDoc?.price;
+				if (!userId || !food || !restaurant || !date) {
+					res.writeHead(400, { "Content-Type": "application/json" });
+					return res.end(
+						JSON.stringify({ message: "اطلاعات ناقص است" })
+					);
+				}
 
-				if (!foodDoc) {
+				const user = await User.findById(userId);
+				if (!user) {
 					res.writeHead(404, { "Content-Type": "application/json" });
 					return res.end(
-						JSON.stringify({ message: "Food not found" })
+						JSON.stringify({ message: "کاربر پیدا نشد" })
+					);
+				}
+
+				const foodDoc = await Food.findOne({ name: food, restaurant });
+				if (!foodDoc) {
+					res.writeHead(404, { "Content-Type": "application/json" });
+					return res.end(JSON.stringify({ message: "غذا پیدا نشد" }));
+				}
+
+				const price = Number(foodDoc.price);
+
+				if (Number(user.balance) < price) {
+					res.writeHead(400, { "Content-Type": "application/json" });
+					return res.end(
+						JSON.stringify({ message: "موجودی کافی نیست" })
+					);
+				}
+
+				const start = new Date(date);
+				start.setHours(0, 0, 0, 0);
+				const end = new Date(date);
+				end.setHours(23, 59, 59, 999);
+
+				const isExist = await Reserve.findOne({
+					userId,
+					date: { $gte: start, $lte: end },
+				});
+
+				if (isExist) {
+					res.writeHead(400, { "Content-Type": "application/json" });
+					return res.end(
+						JSON.stringify({ message: "شما قبلا رزرو کرده‌اید" })
 					);
 				}
 
 				const newReserve = new Reserve({
 					userId,
-					reserveDate: new Date(date),
-					foodName: food,
-					restaurantName: restaurant,
+					foodId: foodDoc._id,
+					restaurant,
+					date: new Date(date),
 					price,
 				});
 
 				await newReserve.save();
 
+				user.balance -= price;
+				await user.save();
+
 				res.writeHead(200, { "Content-Type": "application/json" });
-				res.end(JSON.stringify({ message: "Reserve Successful!" }));
+				res.end(JSON.stringify({ message: "رزرو با موفقیت انجام شد" }));
 			} catch (err) {
 				console.error("Reserve Error:", err);
 				res.writeHead(500, { "Content-Type": "application/json" });
 				res.end(
 					JSON.stringify({
-						message: "Reserve failed!",
+						message: "خطای داخلی سرور",
 						error: err.message,
 					})
 				);
 			}
 		});
 	}
+
+	// To create a request
+	else if (req.url === "/api/Requests" && req.method === "POST") {
+		let body = "";
+		req.on("data", (chunk) => {
+			body += chunk.toString();
+		});
+
+		req.on("end", async () => {
+			try {
+				const data = JSON.parse(body);
+				const { userId, content, to } = data;
+
+				if (!content || !userId) {
+					res.writeHead(400, { "Content-Type": "application/json" });
+					return res.end(
+						JSON.stringify({ message: "درخواست معتبر نیست" })
+					);
+				}
+
+				const date = new Date();
+				const newRequest = new Request({
+					userId,
+					content,
+					to,
+					createdAt: date,
+				});
+				await newRequest.save();
+
+				res.writeHead(201, { "Content-Type": "application/json" });
+				res.end(
+					JSON.stringify({
+						message: "درخواست با موفقیت ثبت شد",
+						requestId: newRequest._id,
+						to: newRequest.to,
+						createdAt: newRequest.createdAt,
+						status: newRequest.status,
+						content: newRequest.content,
+					})
+				);
+			} catch (err) {
+				console.error(err);
+				res.writeHead(500, { "Content-Type": "application/json" });
+				res.end(JSON.stringify({ message: "خطا در ثبت درخواست" }));
+			}
+		});
+	}
+
+	// To get users requests
+	else if (req.url.startsWith("/api/requests") && req.method === "GET") {
+		(async () => {
+			const urlParts = new URL(req.url, `http://${req.headers.host}`);
+			const userId = urlParts.searchParams.get("userId");
+
+			try {
+				const requests = await Request.find({ userId }).sort({
+					createdAt: -1,
+				});
+
+				res.writeHead(200, { "Content-Type": "application/json" });
+				res.end(JSON.stringify(requests));
+			} catch (err) {
+				console.error(err);
+				res.writeHead(500, { "Content-Type": "application/json" });
+				res.end(
+					JSON.stringify({ message: "خطا در دریافت درخواست‌ها" })
+				);
+			}
+		})();
+	}
+
+	// To delete request
+	else if (req.url.startsWith("/api/Requests/") && req.method === "DELETE") {
+		const id = req.url.split("/").pop();
+
+		(async () => {
+			try {
+				const request = await Request.findById(id);
+				if (!request) {
+					res.writeHead(404, { "Content-Type": "application/json" });
+					return res.end(
+						JSON.stringify({ message: "درخواست پیدا نشد" })
+					);
+				}
+
+				await Request.findByIdAndDelete(id);
+
+				res.writeHead(200, { "Content-Type": "application/json" });
+				res.end(
+					JSON.stringify({ message: "درخواست با موفقیت حذف گردید" })
+				);
+			} catch (err) {
+				console.error("Error deleting request:", err);
+				res.writeHead(500, { "Content-Type": "application/json" });
+				res.end(
+					JSON.stringify({
+						message: "خطا در حذف درخواست",
+						error: err.message,
+					})
+				);
+			}
+		})();
+	}
+
+	// To get user course
+	else if (req.url.startsWith("/api/user-courses") && req.method === "GET") {
+		(async () => {
+			const urlParts = new URL(req.url, `http://${req.headers.host}`);
+			const userId = urlParts.searchParams.get("userId");
+	
+			try {
+				const userCourses = await UserCourse.find({ userId }).lean();
+	
+				// fetch all courses sequentially
+				const formatted = [];
+				for (const uc of userCourses) {
+					if (!uc.courseId) continue;
+	
+					const course = await Course.findOne({ _id: uc.courseId }).lean();
+					if (!course) continue;
+	
+					const examDate = new Date(course.examDateTime);
+					formatted.push({
+						name: course.courseName,
+						code: course.courseCode,
+						unit: course.unit,
+						group: course.courseGroup,
+						professor: course.professor,
+						semester: uc.semester,
+						examDay: examDate.toLocaleDateString("fa-IR"),
+						examTime: examDate.toLocaleTimeString("fa-IR", {
+							hour: "2-digit",
+							minute: "2-digit",
+						}),
+						grade: uc.Grade ?? "-",
+					});
+				}
+	
+				res.writeHead(200, { "Content-Type": "application/json" });
+				res.end(JSON.stringify(formatted));
+			} catch (err) {
+				console.error("User courses error:", err);
+				res.writeHead(500, { "Content-Type": "application/json" });
+				res.end(JSON.stringify({ error: "Server error" }));
+			}
+		})();
+	}	
 
 	// To load css files
 	else if (req.url.endsWith(".css")) {

@@ -4,37 +4,50 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="./menu.style.css" />
   <link rel="stylesheet" href="./food.style.css" />
   <title>Food</title>
 </head>
 
 <body>
 
-  <div class="dashboard_container">
-    <div class="dashboard_navbar">
-      <div class="dashborad_icon"></div>
-      <div class="navbar_container">
+  <div class="food_container">
+    <div class="menu">
+      <div class="menu_container">
         <button>
           <a href="/Dashboard">
             پنل کاربری
           </a>
         </button>
         <button>
-          درخواست ها
+          <a style="color: rgb(11, 11, 114); font-size: larger ; font-weight: bold;" href="/Food">
+            رزرو غذا
+          </a>
         </button>
         <button>
-          لیست دروس امسال
+          <a href="/Request">
+            درخواست ها
+          </a>
         </button>
         <button>
-          پرداخت ها و امور مالی
+          <a href="/Course">
+            لیست دروس نیمسال
+          </a>
         </button>
         <button>
-          پیام ها و اطلاعیه ها
-        </button>
+          <a href="/Payment">
+            پرداخت ها و امور مالی
+          </a>
         </button>
         <button>
-          پروفایل شخصی
+          <a href="/News">
+            پیام ها و اطلاعیه ها
+          </a>
+        </button>
+        <button id="logout">
+          <a href="/Login">
+            خروج
+          </a>
         </button>
       </div>
     </div>
@@ -42,8 +55,12 @@
     <div class="container">
       <!-- موجودی -->
       <div class="balance-section">
-        <span>موجودی: <strong id="balance">120,000</strong> تومان</span>
-        <button id="add-balance-btn">افزایش موجودی</button>
+        <span>موجودی: <strong id="balance"></strong> تومان</span>
+        <button id="add-balance-btn">
+          <a href="/Payment">
+            افزایش موجودی
+          </a>
+        </button>
       </div>
 
       <!-- فرم رزرو -->
@@ -62,7 +79,7 @@
         <input type="date" name="date" id="date" />
 
         <!-- انتخاب غذا -->
-        <label>انتخاب غذا:</label>
+        <label id="select-label">انتخاب غذا:</label>
         <div id="food-list" class="food-list">
         </div>
 
@@ -90,7 +107,7 @@
     </div>
   </div>
 
-  <script src="Food.js"></script>
+  <script src="food.js"></script>
 
 </body>
 

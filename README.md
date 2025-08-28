@@ -1,4 +1,4 @@
-# 🎓 StudentSystem
+# StudentSystem
 
 This is a **mini full-stack project** created for the **Web Programming course**.
 It uses **Node.js**, **Express**, and **MongoDB** to manage students, courses, and photos.
@@ -7,7 +7,7 @@ The goal of this project is to give a hands-on demonstration of working with bac
 
 ---
 
-## ✨ Features
+## Features
 
 * 📚 Manage students and courses
 * 🖼️ Handle photos
@@ -16,7 +16,7 @@ The goal of this project is to give a hands-on demonstration of working with bac
 
 ---
 
-## ⚡ Prerequisites
+## Prerequisites
 
 Before running the project, make sure you have installed:
 
@@ -26,7 +26,7 @@ Before running the project, make sure you have installed:
 
 ---
 
-## 🚀 Installation
+## Installation
 
 1. Clone this repository:
 
@@ -45,7 +45,7 @@ npm install
 
 ---
 
-## ▶️ How to Run
+## How to Run
 
 Run the following commands **each in a separate terminal** (or later, you can combine them with tools like `concurrently`):
 
@@ -64,14 +64,14 @@ Tada 🎉! Your website is now live. You can use it and have fun!
 
 ---
 
-## 💡 Tips
+## Tips
 
 * You can use **nodemon** for automatic server restarts during development.
 * If you want to simplify running everything, you can use node instead.
 
 ---
 
-## ✅ Final Notes
+## Final Notes
 
 This project is mainly for learning and practicing full-stack development concepts.
 Don’t forget:
